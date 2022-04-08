@@ -1,29 +1,49 @@
 import { useQuery } from "react-query";
+import { useState } from "react";
 import axios from "axios";
-import "./App.css";
-import { Person } from "./components/Person";
 
-function App() {
-  const { isLoading, error, data, isFetching } = useQuery("people2", () =>
-    axios.get("https://swapi.dev/api/people/?page=5").then((res) => {
-      console.log("data", res.data);
-      return res.data;
-    })
+const App = () => {
+  const [page, setPage] = useState(0);
+  const [breweries, setBreweries] = useState([]);
+  const fetchBreweries = (newPage = 3) =>
+  axios.get("https://api.openbrewerydb.org/breweries?page=" + newPage).then((res) => setBreweries(res.data))
+
+
+  const { isLoading, isError, error, isFetching, } = useQuery(
+    ["breweries", page],
+    () => fetchBreweries(page),
+
   );
 
-  if (isLoading) return "Loading...";
-
-  if (error) return "An error has occurred: " + error.message;
-
   return (
-    <div className="App">
-      <h1>React Query</h1>
-      <div>{isFetching ? "Updating..." : ""}</div>
-      {data.results.map((person) => (
-        <Person key={person.url} data={person} />
-      ))}
+    <div>
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : isError ? (
+        <div>Error: {error.message}</div>
+      ) : (
+        <div>
+          {breweries.map((project) => (
+            <p key={project.id}>{project.name}</p>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={() => setPage((old) => Math.max(old - 1, 0))}
+        disabled={page === 0}
+      >
+        Página anterior
+      </button>{" "}
+      <button
+       onClick={() => setPage((old) => Math.max(old +1, 0))}
+       disabled={page === 3}
+      >
+        Próxima página
+      </button>
+      {isFetching ? <span> Loading...</span> : null}
     </div>
   );
 }
 
-export default App;
+  export default App;
