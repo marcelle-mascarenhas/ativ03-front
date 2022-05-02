@@ -1,18 +1,17 @@
 import { useQuery } from "react-query";
 import { useState } from "react";
 import axios from "axios";
+import { Person } from "./components/Person";
 
-const App = () => {
-  const [page, setPage] = useState(0);
-  const [breweries, setBreweries] = useState([]);
-  const fetchBreweries = (newPage = 3) =>
-  axios.get("https://api.openbrewerydb.org/breweries?page=" + newPage).then((res) => setBreweries(res.data))
+function App (){
+  const [page, setPage] = useState(1);
+  const [people, setPeople] = useState([]);
+  const fetchPeople = () =>
+    axios.get("https://swapi.dev/api/people/?page=" + page).then((res) => res.data);
 
-
-  const { isLoading, isError, error, isFetching, } = useQuery(
-    ["breweries", page],
-    () => fetchBreweries(page),
-
+  const { isLoading, isError, data, error, isFetching } = useQuery(
+    `people-${page}`,
+    fetchPeople,
   );
 
   return (
@@ -23,23 +22,23 @@ const App = () => {
         <div>Error: {error.message}</div>
       ) : (
         <div>
-          {breweries.map((project) => (
-            <p key={project.id}>{project.name}</p>
-          ))}
-        </div>
+        {data && data.results && data.results.map((person) => (
+          <Person key={person.url} data={person} />
+        ))}
+      </div>
       )}
 
       <button
         onClick={() => setPage((old) => Math.max(old - 1, 0))}
-        disabled={page === 0}
+        disabled={!data || data.previous == null}
       >
-        Página anterior
+        Anterior
       </button>{" "}
       <button
        onClick={() => setPage((old) => Math.max(old +1, 0))}
-       disabled={page === 3}
+       disabled={!data || data.next == null}
       >
-        Próxima página
+        Próximo
       </button>
       {isFetching ? <span> Loading...</span> : null}
     </div>
