@@ -5,7 +5,6 @@ import { Person } from "./components/Person";
 
 function App (){
   const [page, setPage] = useState(1);
-  const [people, setPeople] = useState([]);
   const fetchPeople = () =>
     axios.get("https://swapi.dev/api/people/?page=" + page).then((res) => res.data);
 
